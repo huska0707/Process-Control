@@ -1,10 +1,24 @@
 const express = require("express");
-const { exec, execSync } = require("child_process");
+const { exec } = require("child_process");
+const basicAuth = require("basic-auth");
+
 const app = express();
 const port = 3000;
 
-app.get("/processes", (req, res) => {
-  exec("tasklist", (err, stdout, stderr) => {
+const auth = (req, res, next) => {
+  const user = basicAuth(req);
+  if (!user || user.name !== "admin" || user.pass !== "password") {
+    res.set("WWW-Authenticate", 'Basic realm="example"');
+    return res.status(401).send("Authentication required.");
+  }
+  next();
+};
+
+const isWindows = process.platform === "win32";
+
+app.get("/processes", auth, (req, res) => {
+  const command = isWindows ? "tasklist" : "ps -e";
+  exec(command, (err, stdout, stderr) => {
     if (err) {
       res.status(500).send(`Error: ${stderr}`);
       return;
@@ -13,19 +27,23 @@ app.get("/processes", (req, res) => {
   });
 });
 
-app.get("/processes/:pid/:action", (req, res) => {
+app.get("/processes/:pid/:action", auth, (req, res) => {
   const { pid, action } = req.params;
   let command;
 
   switch (action) {
     case "stop":
-      command = `taskkill /PID ${pid} /F`;
+      command = isWindows ? `taskkill /PID ${pid} /F` : `kill -9 ${pid}`;
       break;
     case "start":
-      command = `start /B "your_program.exe"`;
+      command = isWindows
+        ? `start /B "your_program.exe"`
+        : `nohup your_program &`;
       break;
     case "restart":
-      command = `taskkill /PID ${pid} /F && start /B "your_program.exe"`;
+      command = isWindows
+        ? `taskkill /PID ${pid} /F && start /B "your_program.exe"`
+        : `kill -9 ${pid} && nohup your_program &`;
       break;
     default:
       res.status(400).send("Invalid action");
