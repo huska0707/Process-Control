@@ -3,6 +3,25 @@
   font-family: Arial, sans-serif;
 }
 
+.container {
+  width: 1200px;
+  margin: auto;
+  display: flex;
+  justify-content: center;
+  margin-top: 100px;
+}
+
+.list {
+  width: 700px;
+  overflow-y: scroll;
+  overflow-x: visible;
+  height: 500px;
+}
+
+.control {
+  width: 500px;
+}
+
 input, select, button {
   margin: 10px;
 }

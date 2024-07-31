@@ -4,54 +4,51 @@ import axios from "axios";
 import "./App.css";
 
 function App() {
-  const [process, setProcess] = useState("");
+  const [processes, setProcesses] = useState("");
   const [pid, setPid] = useState("");
   const [action, setAction] = useState("");
 
-  const fetchProcess = async () => {
+  const fetchProcesses = async () => {
     try {
-      const res = await axios.get("https://localhost:3000/processes", {
+      const res = await axios.get("http://localhost:3000/processes", {
         auth: {
           username: "admin",
           password: "password",
         },
       });
-      console.log(res.data);
-
-      setProcess(res.data);
+      setProcesses(res.data);
     } catch (error) {
-      console.log("Error fetching processes", error);
+      console.error("Error fetching processes:", error);
     }
   };
 
   const controlProcess = async () => {
     try {
-      await axios.get(`hptts://localhost:3000/processess/${pid}/${action}`, {
+      await axios.get(`http://localhost:3000/processes/${pid}/${action}`, {
         auth: {
           username: "admin",
           password: "password",
         },
       });
-
-      fetchProcess();
+      fetchProcesses(); // Refresh the process list
     } catch (error) {
-      console.log("Error controlling process:", error);
+      console.error("Error controlling process:", error);
     }
   };
 
   useEffect(() => {
-    fetchProcess();
+    fetchProcesses();
   }, []);
 
   return (
-    <div className="container">
-      <div>
-        <h3> Process List</h3>
-        <pre>{process}</pre>
-      </div>
-      <div>
-        <h3> Process Control</h3>
-        <div>
+    <>
+      <div className="container">
+        <div className="list">
+          <h2>Process List</h2>
+          <pre>{processes}</pre>
+        </div>
+        <div className="control">
+          <h2>Control Process</h2>
           <input
             type="text"
             placeholder="PID"
@@ -59,16 +56,15 @@ function App() {
             onChange={(e) => setPid(e.target.value)}
           />
           <select value={action} onChange={(e) => setAction(e.target.value)}>
-            <option>Select Action</option>
-            <option>Stop</option>
-            <option>Start</option>
-            <option>Restart</option>
+            <option value="">Select Action</option>
+            <option value="stop">Stop</option>
+            <option value="start">Start</option>
+            <option value="restart">Restart</option>
           </select>
-
           <button onClick={controlProcess}>Execute</button>
         </div>
       </div>
-    </div>
+    </>
   );
 }
 
