@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useTransition } from "react";
 import axios from "axios";
 
 import "./App.css";
 
 function App() {
   const [process, setProcess] = useState("");
+  const [pid, setPid] = useState("");
+  const [action, setAction] = useState("");
 
   const fetchProcess = async () => {
     try {
@@ -15,10 +17,25 @@ function App() {
         },
       });
       console.log(res.data);
-      
+
       setProcess(res.data);
     } catch (error) {
       console.log("Error fetching processes", error);
+    }
+  };
+
+  const controlProcess = async () => {
+    try {
+      await axios.get(`hptts://localhost:3000/processess/${pid}/${action}`, {
+        auth: {
+          username: "admin",
+          password: "password",
+        },
+      });
+
+      fetchProcess();
+    } catch (error) {
+      console.log("Error controlling process:", error);
     }
   };
 
@@ -35,8 +52,20 @@ function App() {
       <div>
         <h3> Process Control</h3>
         <div>
-          <input type="text" placeholder="PID" />
-          <select></select>
+          <input
+            type="text"
+            placeholder="PID"
+            value={pid}
+            onChange={(e) => setPid(e.target.value)}
+          />
+          <select value={action} onChange={(e) => setAction(e.target.value)}>
+            <option>Select Action</option>
+            <option>Stop</option>
+            <option>Start</option>
+            <option>Restart</option>
+          </select>
+
+          <button onClick={controlProcess}>Execute</button>
         </div>
       </div>
     </div>
