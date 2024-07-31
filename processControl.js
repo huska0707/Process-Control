@@ -1,8 +1,11 @@
 const express = require("express");
 const { exec } = require("child_process");
 const basicAuth = require("basic-auth");
-
+const cors = require('cors');
 const app = express();
+
+app.use(cors());
+
 const port = 3000;
 
 const auth = (req, res, next) => {
